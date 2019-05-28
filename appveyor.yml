@@ -1,0 +1,16 @@
+image: Visual Studio 2017
+
+platform:
+  - x64
+  - x86
+
+configuration:
+  - Release
+
+environment:
+  matrix:
+    - TOOLCHAIN: msvc17
+
+build_script:
+  - cmake CMakeLists.txt
+- cmake --build .

@@ -1,140 +1,93 @@
-## Laboratory work IV
+## Laboratory work III
 
-Данная лабораторная работа посвещена изучению систем непрерывной интеграции на примере сервиса **Travis CI**
+[![Build Status](https://travis-ci.com/AndreevSemen/lab04.svg?branch=wp%2Flab)](https://travis-ci.com/AndreevSemen/lab04)
+[![Build status](https://ci.appveyor.com/api/projects/status/f15qah26nrb99asd?svg=true)](https://ci.appveyor.com/project/AndreevSemen/lab04)
+
+Данная лабораторная работа посвещена изучению систем автоматизации сборки проекта на примере **CMake**
 
 ```ShellSession
-$ open https://travis-ci.org
+$ open https://cmake.org/
 ```
 
-## Tasks
+### Homework
 
-- [ ] 1. Авторизоваться на сервисе **Travis CI** с использованием **GitHub** аккаунта
-- [ ] 2. Создать публичный репозиторий с названием **lab04** на сервисе **GitHub**
-- [ ] 3. Ознакомиться со ссылками учебного материала
-- [ ] 4. Включить интеграцию сервиса **Travis CI** с созданным репозиторием
-- [ ] 5. Получить токен для **Travis CLI** с правами **repo** и **user**
-- [ ] 6. Получить фрагмент вставки значка сервиса **Travis CI** в формате **Markdown**
-- [ ] 7. Выполнить инструкцию учебного материала
-- [ ] 8. Составить отчет и отправить ссылку личным сообщением в **Slack**
+## Задание:
 
-## Tutorial
+Вы продолжаете проходить стажировку в "Formatter Inc." (см подробности).
 
-```ShellSession
-$ export GITHUB_USERNAME=<имя_пользователя>
-$ export GITHUB_TOKEN=<полученный_токен>
+В прошлый раз ваше задание заключалось в настройке автоматизированной системы CMake.
+
+Сейчас вам требуется настроить систему непрерывной интеграции для библиотек и приложений, с которыми вы работали в прошлый раз. Настройте сборочные процедуры на различных платформах:
+
+    используйте TravisCI для сборки на операционной системе Linux с использованием компиляторов gcc и clang;
+    используйте AppVeyor для сборки на операционной системе Windows.
+
+## Решение для TravisCI:
+
 ```
+notifications:
+  email: false
 
-```ShellSession
-$ cd ${GITHUB_USERNAME}/workspace
-$ pushd .
-$ source scripts/activate
-```
-
-```ShellSession
-$ \curl -sSL https://get.rvm.io | bash -s -- --ignore-dotfiles
-$ echo "source $HOME/.rvm/scripts/rvm" >> scripts/activate
-$ . scripts/activate
-$ rvm autolibs disable
-$ rvm install ruby-2.4.2
-$ rvm use 2.4.2 --default
-$ gem install travis
-```
-
-```ShellSession
-$ git clone https://github.com/${GITHUB_USERNAME}/lab03 projects/lab04
-$ cd projects/lab04
-$ git remote remove origin
-$ git remote add origin https://github.com/${GITHUB_USERNAME}/lab04
-```
-
-```ShellSession
-$ cat > .travis.yml <<EOF
 language: cpp
-EOF
-```
 
-```ShellSession
-$ cat >> .travis.yml <<EOF
+os:
+  - linux
 
-script:
-- cmake -H. -B_build -DCMAKE_INSTALL_PREFIX=_install
-- cmake --build _build
-- cmake --build _build --target install
-EOF
-```
+# интегрировать на двух разных компиляторах
+compiler:
+  - gcc
+  - clang
 
-```ShellSession
-$ cat >> .travis.yml <<EOF
-
+# Using SOFT
 addons:
   apt:
     sources:
-      - george-edison55-precise-backports
+      - ubuntu-toolchain-r-test
+      - llvm-toolchain-precise-3.6
     packages:
-      - cmake
-      - cmake-data
-EOF
+      - g++-7
+      - clang-3.6
+
+# Target scripts
+script:
+  - cmake CMakeLists.txt
+  - cmake --build .
 ```
 
-```ShellSession
-$ travis login --github-token ${GITHUB_TOKEN}
+## Решение для AppVeyor:
+
+
+```
+image: Visual Studio 2017
+
+
+# Bыбраны две архитектуры для большего покрытия возможных ошибок
+platform:
+  - x64
+  - x86
+
+# Release mode
+configuration:
+  - Release
+
+# Собираем на Microsoft Visual Studio 2017
+environment:
+  matrix:
+    - TOOLCHAIN: msvc17
+
+# Target scripts
+build_script:
+  - cmake CMakeLists.txt
+  - cmake --build .
 ```
 
-```ShellSession
-$ travis lint
-```
-
-```ShellSession
-$ ex -sc '1i|<фрагмент_вставки_значка>' -cx README.md
-```
-
-```ShellSession
-$ git add .travis.yml
-$ git add README.md
-$ git commit -m"added CI"
-$ git push origin master
-```
-
-```ShellSession
-$ travis lint
-$ travis accounts
-$ travis sync
-$ travis repos
-$ travis enable
-$ travis whatsup
-$ travis branches
-$ travis history
-$ travis show
-```
-
-## Report
-
-```ShellSession
-$ popd
-$ export LAB_NUMBER=04
-$ git clone https://github.com/tp-labs/lab${LAB_NUMBER} tasks/lab${LAB_NUMBER}
-$ mkdir reports/lab${LAB_NUMBER}
-$ cp tasks/lab${LAB_NUMBER}/README.md reports/lab${LAB_NUMBER}/REPORT.md
-$ cd reports/lab${LAB_NUMBER}
-$ edit REPORT.md
-$ gistup -m "lab${LAB_NUMBER}"
-```
-
-## Homework
-
-Вы продолжаете проходить стажировку в "Formatter Inc." (см [подробности](https://github.com/tp-labs/lab03#Homework)).
-
-В прошлый раз ваше задание заключалось в настройке автоматизированной системы **CMake**.
-
-Сейчас вам требуется настроить систему непрерывной интеграции для библиотек и приложений, с которыми вы работали в [прошлый раз](https://github.com/tp-labs/lab03#Homework). Настройте сборочные процедуры на различных платформах:
-* используйте [TravisCI](https://travis-ci.com/) для сборки на операционной системе **Linux** с использованием компиляторов **gcc** и **clang**;
-* используйте [AppVeyor](https://www.appveyor.com/) для сборки на операционной системе **Windows**.
 
 ## Links
-
-- [Travis Client](https://github.com/travis-ci/travis.rb)
-- [AppVeyour](https://www.appveyor.com/)
-- [GitLab CI](https://about.gitlab.com/gitlab-ci/)
+- [Основы сборки проектов на С/C++ при помощи CMake](https://eax.me/cmake/)
+- [CMake Tutorial](http://neerc.ifmo.ru/wiki/index.php?title=CMake_Tutorial)
+- [C++ Tutorial - make & CMake](https://www.bogotobogo.com/cplusplus/make.php)
+- [Autotools](http://www.gnu.org/software/automake/manual/html_node/Autotools-Introduction.html)
+- [CMake](https://cgold.readthedocs.io/en/latest/index.html)
 
 ```
 Copyright (c) 2015-2019 The ISC Authors
